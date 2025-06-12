@@ -250,8 +250,7 @@ def ml_forecast_vis(df):
     mask = (fcst_data["fcst_vis"] == 8) & (fcst_data["Class8"] < 0.5)
     fcst_data.loc[mask, "fcst_vis"] =fcst_data.loc[mask, "second_best_class"]
     # create MEPS vis class for the rest of the leadtimes
-    # CHECK If THIS IS CORRECT
-    dfs = df[(df["leadtime"] > 18)].copy()    
+    dfs = df[(df["leadtime"] > 12)].copy()    
     # Convert to visibility class
     bins = [0, 150, 350, 600, 800, 1500, 3000, 5000, 8000, np.inf]
     labels = [
@@ -465,7 +464,7 @@ def main():
         # Make a forecast with ML
         ml = ml_forecast_vis(df)
         # ml is a df with ml forecast visibility (until leadtime 18h) and MEPS visibility (after 18h)
-    elif args.parameter == "cldbase":
+    elif args.parameter == "ceiling":
         df = preprocess_ceiling(df_data)
         # Make a forecast with ML
         ml = ml_forecast_ceiling(df)
@@ -557,4 +556,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-    

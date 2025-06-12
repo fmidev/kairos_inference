@@ -1,6 +1,5 @@
 import numpy as np
 import eccodes as ecc
-import gridpp
 import fsspec
 import datetime
 import pyproj
@@ -173,133 +172,16 @@ def read_grib_time(gribfile, read_coordinates=False):
                 forecasttime,
             )
 
-
-
-def read_grib(gribfile, read_coordinates=False):
-    """Read first message from grib file and return content.
-    List of coordinates is only returned on request, as it's quite
-    slow to generate.
-    """
-    forecasttime = []
-    values = []
-
-    print(f"Reading file {gribfile}")
-    wrk_gribfile = gribfile
-
-    if gribfile.startswith("s3://"):
-        wrk_gribfile = read_file_from_s3(gribfile)
-
-    lons = []
-    lats = []
-
-    with open(wrk_gribfile, "rb") as fp:
-        # print("Reading {}".format(gribfile))
-
-        while True:
-            try:
-                gh = ecc.codes_grib_new_from_file(fp)
-            except ecc.WrongLengthError as e:
-                print(e)
-                file_stats = os.stat(wrk_gribfile)
-                print("Size of {} is {} bytes".format(wrk_gribfile, file_stats.st_size))
-                sys.exit(1)
-
-            if gh is None:
-                break
-
-            ni = ecc.codes_get_long(gh, "Nx")
-            nj = ecc.codes_get_long(gh, "Ny")
-            dataDate = ecc.codes_get_long(gh, "dataDate")
-            dataTime = ecc.codes_get_long(gh, "dataTime")
-            forecastTime = ecc.codes_get_long(gh, "endStep")
-            print(forecastTime)
-            analysistime = datetime.datetime.strptime(
-                "{}.{:04d}".format(dataDate, dataTime), "%Y%m%d.%H%M"
-            )
-
-            ftime = analysistime + datetime.timedelta(hours=forecastTime)
-            forecasttime.append(ftime)
-
-            tempvals = ecc.codes_get_values(gh).reshape(nj, ni)
-            values.append(tempvals)
-
-            if read_coordinates and len(lons) == 0:
-                projstr = get_projstr(gh)
-
-                di = ecc.codes_get_double(gh, "DxInMetres")
-                dj = ecc.codes_get_double(gh, "DyInMetres")
-
-                proj_to_ll = pyproj.Transformer.from_crs(projstr, "epsg:4326")
-
-                for j in range(nj):
-                    y = j * dj
-                    for i in range(ni):
-                        x = i * di
-
-                        lat, lon = proj_to_ll.transform(x, y)
-                        lons.append(lon)
-                        lats.append(lat)
-
-        if read_coordinates == False and len(values) == 1:
-            return (
-                None,
-                None,
-                np.asarray(values).reshape(nj, ni),
-                analysistime,
-                forecasttime,
-            )
-        elif read_coordinates == False and len(values) > 1:
-            return None, None, np.asarray(values), analysistime, forecasttime
-        else:
-            return (
-                np.asarray(lons).reshape(nj, ni),
-                np.asarray(lats).reshape(nj, ni),
-                np.asarray(values),
-                analysistime,
-                forecasttime,
-            )
-
-
-def read_grid(args):
-    """Top function to read "all" gridded data"""
-    # Define the grib-file used as background/"parameter_data"
-    if args.parameter == "temperature":
-        parameter_data = args.t2_data
-    elif args.parameter == "windspeed":
-        parameter_data = args.ws_data
-    elif args.parameter == "gust":
-        parameter_data = args.wg_data
-    elif args.parameter == "humidity":
-        parameter_data = args.rh_data
-
-    lons, lats, vals, analysistime, forecasttime = read_grib(parameter_data, True)
-
-    _, _, topo, _, _ = read_grib(args.topography_data, False)
-    _, _, lc, _, _ = read_grib(args.landseacover_data, False)
-
-    # modify  geopotential to height and use just the first grib message, since the topo & lc fields are static
-    topo = topo / 9.81
-    topo = topo[0]
-    lc = lc[0]
-
-    if args.parameter == "temperature":
-        vals = vals - 273.15
-    elif args.parameter == "humidity":
-        vals = vals * 100
-
-    grid = gridpp.Grid(lats, lons, topo, lc)
-    return grid, lons, lats, vals, analysistime, forecasttime, lc, topo
-
 def write_grib_message(fp, args, analysistime, forecasttime, data, grib_options):
-    pdtn = 1 #70 # productDefinitionTemplateNumber
+    pdtn = 70 # productDefinitionTemplateNumber
     tosp = None # typeOfStatisticalProcessing
     levelvalue = 0
     if args.parameter == "visibility":
         pcat = 19
-        pnum = 0
-    elif args.parameter == "ceiling": # parameterCategory vis & cbase = 6
-        pnum = 193
-        pcat = 13 # CLDBASE = 13
+        pnum = 205
+    elif args.parameter == "ceiling": 
+        pcat = 6  
+        pnum = 205
     # Store different time steps as grib msgs
     for j in range(0, len(data)):
         tdata = data[j]
@@ -337,7 +219,7 @@ def write_grib_message(fp, args, analysistime, forecasttime, data, grib_options)
         ecc.codes_set(h, "forecastTime", forecastTime)
         ecc.codes_set(h, "centre", 86)
         ecc.codes_set(h, "bitmapPresent", 1)
-        ecc.codes_set(h, "generatingProcessIdentifier", 203)
+        ecc.codes_set(h, "generatingProcessIdentifier", 203) # ADF_preop
         ecc.codes_set(h, "discipline", 0)
         ecc.codes_set(h, "parameterCategory", pcat)
         ecc.codes_set(h, "parameterNumber", pnum)
