@@ -3,13 +3,13 @@ This kairos inference code can be used to predict visibility and cloud base heig
 
 ## Usage
 Running with run_inference.sh shell script:
-'''
+```
 ./run_inference.py YYYYMMMDDHH parameter outputfile.grib2 producer_id
-'''
+```
 E.g.
-'''
+```
 ./run_inference.py 2025061209 "visibility" "visibility_class_2025061209.grib2" 293
-'''
+```
 
 ## Authors
 kaisa.ylinen@fmi.fi
