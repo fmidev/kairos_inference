@@ -1,25 +1,12 @@
 import numpy as np
-import eccodes as ecc
 import sys
-import pyproj
-import datetime
 import argparse
 import pandas as pd
-import xarray as xr
 import gridpp
-import fsspec
-import os
 import time
-import copy
-import numpy.ma as ma
 import xgboost as xgb
-import warnings
-from fileutils import read_grib_time, write_grib, read_file_from_s3
+from fileutils import read_grib_time, write_grib
 from metarutils import latest_metar_observations_features
-import matplotlib.pyplot as plt
-import matplotlib.pyplot as plt
-import cartopy.crs as ccrs
-import cartopy.feature as cfeature
 
 def parse_kv(kv):
     """Parse a key=value string into a dictionary."""
