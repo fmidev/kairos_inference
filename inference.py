@@ -41,6 +41,7 @@ def parse_kv(kv):
 
 def parse_command_line():
     parser = argparse.ArgumentParser()
+    parser.add_argument("--parameter", action="store", type=str, required=True)
     parser.add_argument("--clb", action="store", type=str, required=True)
     parser.add_argument("--wd", action="store", type=str, required=True)
     parser.add_argument("--ws", action="store", type=str, required=True)
@@ -58,12 +59,17 @@ def parse_command_line():
     parser.add_argument("--lcc", action="store", type=str, required=True)
     parser.add_argument("--rnetsw", action="store", type=str, required=True)
     parser.add_argument("--rnetlw", action="store", type=str, required=True)
-    parser.add_argument("--parameter", action="store", type=str, required=True)
+    parser.add_argument("--model_vis_0", action="store", type=str, required=True)
+    parser.add_argument("--model_vis_1", action="store", type=str, required=True)
+    parser.add_argument("--model_vis_2", action="store", type=str, required=True)
+    parser.add_argument("--model_cbase_0_36", action="store", type=str, required=True)
+    parser.add_argument("--model_cbase_4_9", action="store", type=str, required=True)
+    parser.add_argument("--producer_id", action="store", type=int, required=True)
     parser.add_argument("--output", action="store", type=str, required=True)
     #parser.add_argument("--plot", action="store_true", default=False)
     parser.add_argument("--grib_options", action="store", nargs="+", metavar="KEY=VALUE", type=str, default=None, required=False)
     args = parser.parse_args()
-    allowed_params = ["visibility", "ceiling"]
+    allowed_params = ["visibility", "cldbase"]
     if args.parameter not in allowed_params:
         print("Error: parameter must be one of: {}".format(allowed_params))
         sys.exit(1)
@@ -219,18 +225,19 @@ def preprocess_vis(df_data):
     df = df.round(2)
     return df
 
-def ml_forecast_vis(df):
+def ml_forecast_vis(df, args):
     """
     Make a forecast with ML
     """
     fcst_probs = []
     start = [3, 6, 12, 18, 24, 33 ]
+    vis_models = [args.model_vis_0, args.model_vis_1, args.model_vis_2]
     for i in range(2):
         # Load the model
         startd = start[i]
         endd = start[i+1]
         dfc = df[(df["leadtime"] > startd) & (df["leadtime"] <= endd)]
-        model_path = f"xgb_vis_{i}_0625.json"
+        model_path = vis_models[i] #f"xgb_vis_{i}_0625.json"
         bst = xgb.Booster()
         bst.load_model(model_path)
         # Predict using the model
@@ -374,7 +381,7 @@ def preprocess_ceiling(df_data):
         df["t_td_" + str(i)] = df["t_" + str(i)] - df["td_" + str(i)]
     return df
 
-def ml_forecast_ceiling(df):
+def ml_forecast_ceiling(df, args):
     """
     Make a forecast with ML
     """
@@ -382,10 +389,10 @@ def ml_forecast_ceiling(df):
     fcst_probs = []
     for i in range(2):
         if (i == 0):
-            model_path = 'xgb_cbase_4_9_20250610.json'
+            model_path = args.model_cbase_4_9 #'xgb_cbase_4_9_20250610.json'
             df_p = df[(df["leadtime"] < 10)]
         else:
-            model_path = 'xgb_cbase_0_36_20250610.json'
+            model_path = args.model_cbase_0_36 #'xgb_cbase_0_36_20250610.json'
             df_p = df[(df["leadtime"] >= 10)]
         model = xgb.Booster()
         model.load_model(model_path)
@@ -462,12 +469,12 @@ def main():
     if args.parameter == "visibility":
         df = preprocess_vis(df_data)
         # Make a forecast with ML
-        ml = ml_forecast_vis(df)
+        ml = ml_forecast_vis(df, args)
         # ml is a df with ml forecast visibility (until leadtime 18h) and MEPS visibility (after 18h)
-    elif args.parameter == "ceiling":
+    elif args.parameter == "cldbase":
         df = preprocess_ceiling(df_data)
         # Make a forecast with ML
-        ml = ml_forecast_ceiling(df)
+        ml = ml_forecast_ceiling(df, args)
     # Make a grid with missing data, except for the area around the airport
     new_grid = clb.copy() # could be any of the MEPS data
     new_grid = new_grid[2:]  # Remove first 2 leadtimes

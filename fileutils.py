@@ -219,7 +219,7 @@ def write_grib_message(fp, args, analysistime, forecasttime, data, grib_options)
         ecc.codes_set(h, "forecastTime", forecastTime)
         ecc.codes_set(h, "centre", 86)
         ecc.codes_set(h, "bitmapPresent", 1)
-        ecc.codes_set(h, "generatingProcessIdentifier", 203) # ADF_preop
+        ecc.codes_set(h, "generatingProcessIdentifier", args.producer_id) # ADF_preop 203, ADF_prod 204
         ecc.codes_set(h, "discipline", 0)
         ecc.codes_set(h, "parameterCategory", pcat)
         ecc.codes_set(h, "parameterNumber", pnum)
