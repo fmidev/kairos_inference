@@ -1,4 +1,4 @@
-#!/usr/bin/python3.9
+#!/usr/bin/python3.11
 # Script to run ML realtime forecasts for testing
 # Example: ./run_inference.sh 2025061306 visibility 293 
 # ./run_inference.sh 2025061306 cldbase 293
