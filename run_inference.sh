@@ -10,7 +10,7 @@
 NN=$1
 VARIABLE=$2
 PRODUCER_ID=$3
-OUTPUT_FILE=$variable"_class_"$NN".grib2"
+OUTPUT_FILE=$VARIABLE"_class_"$NN".grib2"
 
 #WEEKDAY=`date +"%a"`
 #HOD=`date +"%H"`
