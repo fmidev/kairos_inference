@@ -179,7 +179,7 @@ def write_grib_message(fp, args, analysistime, forecasttime, data, grib_options)
     if args.parameter == "visibility":
         pcat = 19
         pnum = 205
-    elif args.parameter == "ceiling": 
+    elif args.parameter == "cldbase": 
         pcat = 6  
         pnum = 205
     # Store different time steps as grib msgs
