@@ -1,14 +1,14 @@
-#!/usr/bin/python3.11
+#!/bin/bash
 # Script to run ML realtime forecasts for testing
 # Example: ./run_inference.sh 2025061306 visibility 293 
 # ./run_inference.sh 2025061306 cldbase 293
 
 #python3.11 --version
 
-variable=$1
 #NN_prev=$(date -u -d "@$(( $(date -u +%s) / 10800 * 10800 ))" +%Y%m%d%H)
 #NN=$(date -u -d "${NN_prev:0:8} ${NN_prev:8:2}:00:00 UTC -3 hours" +%Y%m%d%H)
-NN=$2
+NN=$1
+VARIABLE=$2
 PRODUCER_ID=$3
 OUTPUT_FILE=$variable"_class_"$NN".grib2"
 
@@ -25,7 +25,7 @@ echo "PARAMETER:" $PARAMETER
 echo "OUTPUT_FILE:" $OUTPUT_FILE
 
 python3 inference.py \
-  --parameter $variable \
+  --parameter $VARIABLE \
   --clb "${bucket}${NN}00/CLDBASE-M_0.grib2" \
   --wd  "${bucket}${NN}00/DD-D_10.grib2" \
   --ws  "${bucket}${NN}00/FF-MS_10.grib2" \
