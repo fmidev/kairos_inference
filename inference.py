@@ -464,7 +464,7 @@ def main():
         ml = ml_forecast_ceiling(df, args)
     # Make a grid with missing data, except for the area around the airport
     new_grid = clb.copy() # could be any of the MEPS data
-    new_grid = new_grid[2:]  # Remove first 2 leadtimes
+    new_grid = new_grid[3:]  # Remove first 3 leadtimes (0, 1, and 2 hours)
     # Assign all values as missing data == 9999
     new_grid[:] = 9999 
     # Get grid points near the airport in 20km radius
