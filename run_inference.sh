@@ -1,7 +1,7 @@
 #!/bin/bash
 # Script to run ML realtime forecasts
-# Example: ./run_inference.sh 2025061306 visibility visibility_class_2025061306.grib2 203 
-# ./run_inference.sh 2025061306 cldbase cldbase_class_2025061306.grib2 203
+# Example: ./run_inference.sh 2025061306 visibility visibility_class.grib2 203 
+# ./run_inference.sh 2025061306 cldbase cldbase_class.grib2 203
 
 #python3.11 --version
 
