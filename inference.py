@@ -477,7 +477,7 @@ def main():
 
     # Save data to grib file 
     # Modify the times: 
-    new_fcsttime = forecasttime[2:]
+    new_fcsttime = forecasttime[3:]
     write_grib(args, analysistime, new_fcsttime, new_grid, args.grib_options)
     """        
     # plot the grid for 8 the leadtimes
