@@ -21,7 +21,7 @@ OUTPUT_FILE=$VARIABLE"_class_"$NN".grib2"
 bucket="s3://routines-data-prod/aerodrome/preop/"
 
 echo "ANALYSIS_TIME:" $NN
-echo "PARAMETER:" $PARAMETER
+echo "PARAMETER:" $VARIABLE
 echo "OUTPUT_FILE:" $OUTPUT_FILE
 
 python3 inference.py \
