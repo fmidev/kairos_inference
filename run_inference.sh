@@ -1,7 +1,7 @@
 #!/bin/bash
-# Script to run ML realtime forecasts for testing
-# Example: ./run_inference.sh 2025061306 visibility 293 
-# ./run_inference.sh 2025061306 cldbase 293
+# Script to run ML realtime forecasts
+# Example: ./run_inference.sh 2025061306 visibility visibility_class_2025061306.grib2 203 
+# ./run_inference.sh 2025061306 cldbase cldbase_class_2025061306.grib2 203
 
 #python3.11 --version
 
@@ -9,8 +9,8 @@
 #NN=$(date -u -d "${NN_prev:0:8} ${NN_prev:8:2}:00:00 UTC -3 hours" +%Y%m%d%H)
 NN=$1
 VARIABLE=$2
-PRODUCER_ID=$3
-OUTPUT_FILE=$VARIABLE"_class_"$NN".grib2"
+OUTPUT_FILE=$3
+PRODUCER_ID=$4
 
 #WEEKDAY=`date +"%a"`
 #HOD=`date +"%H"`
