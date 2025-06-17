@@ -15,6 +15,7 @@ WORKDIR /kairos_inference
 
 ENV VIS_TAG=0625
 ENV CLDBASE_TAG=20250610
+ENV AWS_REQUEST_CHECKSUM_CALCULATION='WHEN_REQUIRED'
 
 ADD https://lake.fmi.fi/ml-models/meps-aerodrome/xgb_vis_0_$VIS_TAG.json /kairos_inference
 ADD https://lake.fmi.fi/ml-models/meps-aerodrome/xgb_vis_1_$VIS_TAG.json /kairos_inference
