@@ -395,7 +395,7 @@ def ml_forecast_ceiling(df, args):
     fcst_data["fcst_ceiling"] = fcst_ceiling  # Add predicted class
     # Convert latest observation to ceiling class
     m_ft = 0.3048  # meters to feet conversion factor
-    bins = [0, 100/m_ft, 200/m_ft, 500/m_ft, 1000/m_ft, 1500/m_ft, np.inf]
+    bins = [0, 100, 200, 500, 1000, 1500, np.inf]
     labels = [
         "<=100 ft",
         "100-200 ft",
@@ -404,7 +404,7 @@ def ml_forecast_ceiling(df, args):
         "1000-1500 ft",
         ">1500 ft"
     ]
-    obs_ceiling = pd.cut(df["cbase_1"], bins=bins, labels=labels, right=True).cat.codes
+    obs_ceiling = pd.cut(df["cbase_1"]/m_ft, bins=bins, labels=labels, right=True).cat.codes
     obs0 = obs_ceiling.iloc[0]
     tmp_ceiling = [obs0]  # Start with the observation class
     # Extend the list with forecast visibility classes and MEPS visibility classes
