@@ -18,6 +18,7 @@ PRODUCER_ID=$4
 #HH=2
 #NN=$(($AIKA1-$HH)
 #echo $NN_prev
+export AWS_REQUEST_CHECKSUM_CALCULATION='WHEN_REQUIRED'
 bucket="s3://routines-data-prod/aerodrome/preop/"
 
 echo "ANALYSIS_TIME:" $NN
