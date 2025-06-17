@@ -394,14 +394,15 @@ def ml_forecast_ceiling(df, args):
     fcst_data = pd.DataFrame(fcst_probs, columns=[f"Class{i}" for i in range(fcst_probs.shape[1])])
     fcst_data["fcst_ceiling"] = fcst_ceiling  # Add predicted class
     # Convert latest observation to ceiling class
-    bins = [0, 100, 200, 500, 1000, 1500, np.inf]
+    m_ft = 0.3048  # meters to feet conversion factor
+    bins = [0, 100/m_ft, 200/m_ft, 500/m_ft, 1000/m_ft, 1500/m_ft, np.inf]
     labels = [
-        "<=100 m",
-        "100-200 m",
-        "200-500 m",
-        "500-1000 m",
-        "1000-1500 m",
-        ">1500 m"
+        "<=100 ft",
+        "100-200 ft",
+        "200-500 ft",
+        "500-1000 ft",
+        "1000-1500 ft",
+        ">1500 ft"
     ]
     obs_ceiling = pd.cut(df["cbase_1"], bins=bins, labels=labels, right=True).cat.codes
     obs0 = obs_ceiling.iloc[0]
