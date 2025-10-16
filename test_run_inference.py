@@ -376,7 +376,7 @@ def preprocess_ceiling(df_data):
         df["t_td_" + str(i)] = df["t_" + str(i)] - df["td_" + str(i)]
     return df
 
-def ml_forecast_ceiling(df, args):
+def ml_forecast_ceiling(df, cbase_models):
     """
     Make a forecast with ML
     """
@@ -384,10 +384,10 @@ def ml_forecast_ceiling(df, args):
     fcst_probs = []
     for i in range(2):
         if (i == 0):
-            model_path = args.model_cbase_4_9 #'xgb_cbase_4_9_20250610.json'
+            model_path = cbase_models[0]
             df_p = df[(df["leadtime"] < 10)]
         else:
-            model_path = args.model_cbase_0_36 #'xgb_cbase_0_36_20250610.json'
+            model_path = cbase_models[1]
             df_p = df[(df["leadtime"] >= 10)]
         model = xgb.Booster()
         model.load_model(model_path)
@@ -396,26 +396,25 @@ def ml_forecast_ceiling(df, args):
         fcst_probs.append(tmp)
     # Stack lists
     fcst_probs = np.concatenate(fcst_probs, axis=0)
-    # get the forecasted class
-    fcst_ceiling = fcst_probs.argmax(axis=1) 
-    # Second best if model is unsure about the class 9
+    # get the forecasted class and add +1, since model is trained without class <100ft (but first class was <200ft and that produces index 0)
+    fcst_ceiling = fcst_probs.argmax(axis=1) + 1
     fcst_data = pd.DataFrame(fcst_probs, columns=[f"Class{i}" for i in range(fcst_probs.shape[1])])
     fcst_data["fcst_ceiling"] = fcst_ceiling  # Add predicted class
     # Convert latest observation to ceiling class
     m_ft = 0.3048  # meters to feet conversion factor
     bins = [0, 100, 200, 500, 1000, 1500, np.inf]
     labels = [
-        "<=100 ft",
-        "100-200 ft",
-        "200-500 ft",
-        "500-1000 ft",
-        "1000-1500 ft",
-        ">1500 ft"
+        "<100 ft",
+        "100-199 ft",
+        "200-499 ft",
+        "500-999 ft",
+        "1000-1499 ft",
+        ">=1500 ft"
     ]
-    obs_ceiling = pd.cut(df["cbase_1"]/m_ft, bins=bins, labels=labels, right=True).cat.codes
+    obs_ceiling = pd.cut(df["cbase_1"]/m_ft, bins=bins, labels=labels, right=False).cat.codes
     obs0 = obs_ceiling.iloc[0]
     tmp_ceiling = [obs0]  # Start with the observation class
-    # Extend the list with forecast visibility classes and MEPS visibility classes
+    # Extend the list with forecast ceiling classes )
     fcst_ser = fcst_data["fcst_ceiling"].tolist()
     tmp_ceiling.extend(fcst_ser)
 
@@ -501,9 +500,12 @@ def main():
             ml = ml_forecast_vis(df, vis_models)
             # ml is a df with ml forecast visibility (until leadtime 18h) and MEPS visibility (after 18h)
         elif args.parameter == "cldbase":
+            model_cbase_0 = f"xgb_cbase_{icao[i]}_4_9_20250924.json"  
+            model_cbase_1 = f"xgb_cbase_{icao[i]}_0_36_20250924.json"
+            cbase_models = [model_cbase_0, model_cbase_1] 
             df = preprocess_ceiling(df_data)
             # Make a forecast with ML
-            ml = ml_forecast_ceiling(df, args)
+            ml = ml_forecast_ceiling(df, cbase_models)
     
         # Get grid points near the airport in 20km radius
         gidxs = grid.get_neighbours(float(latlon.loc[i, "lat"]), float(latlon.loc[i, "lon"]), 20000)
